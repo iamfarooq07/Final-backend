@@ -5,16 +5,18 @@ const generateToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
 export const register = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, role } = req.body;
   try {
     const exists = await User.findOne({ email });
     if (exists) return res.status(400).json({ message: "Email already in use" });
 
-    const user = await User.create({ name, email, password });
+    const user = await User.create({ name, email, password, role });
     res.status(201).json({
       _id: user._id,
       name: user.name, 
       email: user.email,
+      role: user.role,
+      onboardingCompleted: user.onboardingCompleted,
       token: generateToken(user._id),
     });
 
@@ -38,6 +40,8 @@ export const login = async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
+      role: user.role,
+      onboardingCompleted: user.onboardingCompleted,
       token: generateToken(user._id),
     });
   } catch (err) {
@@ -47,4 +51,30 @@ export const login = async (req, res) => {
 
 export const getMe = async (req, res) => {
   res.json(req.user);
+};
+
+export const completeOnboarding = async (req, res) => {
+  const { skills, interests, location } = req.body;
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.skills = skills || user.skills;
+    user.interests = interests || user.interests;
+    user.location = location || user.location;
+    user.onboardingCompleted = true;
+
+    const updatedUser = await user.save();
+
+    res.json({
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      role: updatedUser.role,
+      onboardingCompleted: updatedUser.onboardingCompleted,
+      token: generateToken(updatedUser._id),
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
