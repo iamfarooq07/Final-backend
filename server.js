@@ -23,6 +23,8 @@ app.use(cors({
 }));
 app.use(express.json());
 
+app.use('/uploads', express.static('uploads'));
+
 dataBase();
 
 app.use("/api/auth", authRoutes);

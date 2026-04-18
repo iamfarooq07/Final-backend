@@ -148,7 +148,7 @@ export const getRequests = async (req, res) => {
     // For now, we'll skip location filtering as it requires user location data
 
     const requests = await Request.find(filter)
-      .populate('userId', 'fullName email role skills location')
+      .populate('userId', 'fullName email role skills location profilePicture')
       .sort({ createdAt: -1 });
 
     res.json(requests);
@@ -160,8 +160,8 @@ export const getRequests = async (req, res) => {
 export const getRequestById = async (req, res) => {
   try {
     const request = await Request.findById(req.params.id)
-      .populate('userId', 'fullName email role skills location')
-      .populate('helperId', 'fullName email');
+      .populate('userId', 'fullName email role skills location profilePicture')
+      .populate('helperId', 'fullName email profilePicture');
 
     if (!request) {
       return res.status(404).json({ message: "Request not found" });

@@ -1,5 +1,19 @@
 import jwt from "jsonwebtoken";
+import multer from "multer";
+import path from "path";
 import User from "../models/User.js";
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ storage: storage });
 
 const generateToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
@@ -17,6 +31,7 @@ export const register = async (req, res) => {
       email: user.email,
       role: user.role,
       hasCompletedOnboarding: user.hasCompletedOnboarding,
+      profilePicture: user.profilePicture,
       token: generateToken(user._id),
     });
 
@@ -42,6 +57,7 @@ export const login = async (req, res) => {
       email: user.email,
       role: user.role,
       hasCompletedOnboarding: user.hasCompletedOnboarding,
+      profilePicture: user.profilePicture,
       token: generateToken(user._id),
     });
   } catch (err) {
@@ -73,7 +89,36 @@ export const completeOnboarding = async (req, res) => {
       email: updatedUser.email,
       role: updatedUser.role,
       hasCompletedOnboarding: updatedUser.hasCompletedOnboarding,
+      profilePicture: updatedUser.profilePicture,
       token: generateToken(updatedUser._id),
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+export const updateProfilePicture = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    let profilePicture = req.body.profilePicture;
+
+    if (req.file) {
+      // File uploaded
+      profilePicture = `/uploads/${req.file.filename}`;
+    }
+
+    user.profilePicture = profilePicture;
+    const updatedUser = await user.save();
+
+    res.json({
+      _id: updatedUser._id,
+      fullName: updatedUser.fullName,
+      email: updatedUser.email,
+      role: updatedUser.role,
+      hasCompletedOnboarding: updatedUser.hasCompletedOnboarding,
+      profilePicture: updatedUser.profilePicture,
     });
   } catch (err) {
     res.status(500).json({ message: err.message });

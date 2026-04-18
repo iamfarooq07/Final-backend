@@ -9,7 +9,8 @@ const userSchema = new mongoose.Schema({
   hasCompletedOnboarding: { type: Boolean, default: false },
   skills: [{ type: String }],
   interests: [{ type: String }],
-  location: { type: String }
+  location: { type: String },
+  profilePicture: { type: String } // URL to profile picture
 }, { timestamps: true });
 
 userSchema.pre("save", async function () {
