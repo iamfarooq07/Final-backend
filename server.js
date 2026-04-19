@@ -4,6 +4,8 @@ import dotenv from "dotenv";
 import { dataBase } from "./src/config/db.js";
 import authRoutes from "./src/routes/authRoutes.js";
 import requestRoutes from "./src/routes/requestRoutes.js";
+import messageRoutes from "./src/routes/messageRoutes.js";
+import notificationRoutes from "./src/routes/notificationRoutes.js";
 
 dotenv.config();
 
@@ -29,5 +31,7 @@ dataBase();
 
 app.use("/api/auth", authRoutes);
 app.use("/api/requests", requestRoutes);
+app.use("/api/messages", messageRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
